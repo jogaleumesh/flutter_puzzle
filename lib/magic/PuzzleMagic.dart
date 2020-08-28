@@ -27,13 +27,9 @@ class PuzzleMagic {
     eachWidth = screenSize.width * 0.8 / level;
     eachHeight = screenSize.height * 0.8 / (level - 1);
 
-    print('eachWidth>>>> $eachWidth');
-    print('eachWidth>>>> $eachHeight');
-
     baseX = screenSize.width * 0.1;
 
     baseY = (screenSize.height - screenSize.width) * 0.5;
-
 
     eachBitmapWidth = (image.width / level);
     eachBitmapHeight = (image.height / (level - 1));
@@ -51,9 +47,9 @@ class PuzzleMagic {
 
   List<ImageNode> doTask() {
     List<ImageNode> list = [];
-    for (int j = 0; j < level - 1; j++) {
+    for (int j = 0; j < (level - 1); j++) {
       for (int i = 0; i < level; i++) {
-        if (j * (level + 1) < level * (level - 1)) {
+        if (j * level + i + 1 < level * (level - 1)) {
           ImageNode node = ImageNode();
           node.rect = getOkRectF(i, j);
           node.index = j * level + i;
@@ -76,8 +72,8 @@ class PuzzleMagic {
 
     Rect rect = getShapeRect(i, j, eachBitmapWidth, eachBitmapHeight);
 
-    rect = rect.shift(
-        Offset(eachBitmapWidth.toDouble() * i, eachBitmapHeight.toDouble() * j));
+    rect = rect.shift(Offset(
+        eachBitmapWidth.toDouble() * i, eachBitmapHeight.toDouble() * j));
 
     PictureRecorder recorder = PictureRecorder();
     double ww = eachBitmapWidth.toDouble();
@@ -87,8 +83,7 @@ class PuzzleMagic {
 
     Rect rect2 = Rect.fromLTRB(0.0, 0.0, rect.width, rect.height);
 
-    Paint paint = Paint();
-    canvas.drawImageRect(image, rect, rect2, paint);
+    canvas.drawImageRect(image, rect, rect2, Paint());
     recorder
         .endRecording()
         .toImage(ww.floor(), hh.floor())

@@ -39,14 +39,14 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
   double downX, downY, newX, newY;
   int emptyIndex;
   Direction direction;
-  bool needdraw = true;
+  bool needDraw = true;
   List<ImageNode> hitNodeList = [];
 
   GameState gameState = GameState.loading;
 
   GamePageState(this.size, this.path, this.level) {
     puzzleMagic = PuzzleMagic();
-    emptyIndex = level * level - 1;
+    emptyIndex = (level * (level - 1)) - 1;
 
     puzzleMagic.init(path, size, level).then((val) {
       setState(() {
@@ -84,7 +84,7 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
           GestureDetector(
             child: CustomPaint(
                 painter: GamePainter(nodes, level, hitNode, hitNodeList,
-                    direction, downX, downY, newX, newY, needdraw),
+                    direction, downX, downY, newX, newY, needDraw),
                 size: Size.infinite),
             onPanDown: onPanDown,
             onPanUpdate: onPanUpdate,
@@ -107,7 +107,7 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
   }
 
   void showStartAnimation() {
-    needdraw = true;
+    needDraw = true;
     controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1000),
@@ -137,7 +137,7 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
     });
     alpha.addStatusListener((AnimationStatus val) {
       if (val == AnimationStatus.completed) {
-        needdraw = false;
+        needDraw = false;
       }
     });
     controller.forward();
@@ -148,7 +148,7 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
       return;
     }
 
-    needdraw = true;
+    needDraw = true;
     RenderBox referenceBox = context.findRenderObject();
     Offset localPosition = referenceBox.globalToLocal(details.globalPosition);
     for (int i = 0; i < nodes.length; i++) {
@@ -194,7 +194,7 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
     if (hitNode == null) {
       return;
     }
-    needdraw = false;
+    needDraw = false;
     if (direction == Direction.top) {
       if (-(newY - downY) > hitNode.rect.width / 2) {
         swapEmpty();
