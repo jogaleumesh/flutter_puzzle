@@ -15,22 +15,22 @@ class GameEngine {
         list[i].curIndex = i;
         arr.add(list[i].index);
       }
-    } while (InversePairs(arr) % 2 != 0);
+    } while (inversePairs(arr) % 2 != 0);
   }
 
-  static int InversePairs(List<int> array) {
+  static int inversePairs(List<int> array) {
     if (array.length == 0) {
       return 0;
     }
-    return InversePairs2(array, 0, array.length - 1);
+    return inversePairs2(array, 0, array.length - 1);
   }
 
-  static int InversePairs2(List<int> array, int start, int end) {
+  static int inversePairs2(List<int> array, int start, int end) {
     int result = 0;
     if (start < end) {
       int mid = ((start + end) / 2).floor();
-      result += InversePairs2(array, start, mid);
-      result += InversePairs2(array, mid + 1, end);
+      result += inversePairs2(array, start, mid);
+      result += inversePairs2(array, mid + 1, end);
       result += merge(array, start, mid, end);
     }
     return result;

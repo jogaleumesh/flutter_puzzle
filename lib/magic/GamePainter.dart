@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'dart:ui' as ui show instantiateImageCodec, Codec, Image, TextStyle;
+import 'dart:ui' as ui show TextStyle;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_puzzle/magic/ImageNode.dart';
@@ -8,7 +8,6 @@ import 'package:flutter_puzzle/page/GamePage.dart';
 class GamePainter extends CustomPainter {
   Paint myPaint;
   Path path;
-  final int level;
   final List<ImageNode> nodes;
   final ImageNode hitNode;
   final bool needDraw;
@@ -17,24 +16,15 @@ class GamePainter extends CustomPainter {
   final List<ImageNode> hitNodeList;
   Direction direction;
 
-  GamePainter(
-      this.nodes,
-      this.level,
-      this.hitNode,
-      this.hitNodeList,
-      this.direction,
-      this.downX,
-      this.downY,
-      this.newX,
-      this.newY,
-      this.needDraw) {
-        myPaint = Paint();
-        myPaint.style = PaintingStyle.stroke;
-        myPaint.strokeWidth = 1.0;
-        myPaint.color = Color(0xa0dddddd);
+  GamePainter(this.nodes, this.hitNode, this.hitNodeList, this.direction,
+      this.downX, this.downY, this.newX, this.newY, this.needDraw) {
+    myPaint = Paint();
+    myPaint.style = PaintingStyle.stroke;
+    myPaint.strokeWidth = 1.0;
+    myPaint.color = Color(0xa0dddddd);
 
-        path = Path();
-    }
+    path = Path();
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -52,12 +42,10 @@ class GamePainter extends CustomPainter {
             rect2 = node.rect.shift(Offset(0.0, newY - downY));
           }
         }
-        Rect srcRect = Rect.fromLTRB(
-            0.0, 0.0,
-            node.image.width.toDouble(),
+        Rect srcRect = Rect.fromLTRB(0.0, 0.0, node.image.width.toDouble(),
             node.image.height.toDouble());
 
-        canvas.drawImageRect(nodes[i].image, srcRect, rect2,Paint());
+        canvas.drawImageRect(nodes[i].image, srcRect, rect2, Paint());
       }
 
       for (int i = 0; i < nodes.length; ++i) {

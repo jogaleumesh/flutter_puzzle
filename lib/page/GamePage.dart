@@ -9,13 +9,17 @@ import 'package:flutter_puzzle/magic/PuzzleMagic.dart';
 
 class GamePage extends StatefulWidget {
   final Size size;
+  final String pathType;
   final String imgPath;
-  final int level;
-  GamePage(this.size, this.imgPath, this.level);
+  final int horizontal;
+  final int vertical;
+
+  GamePage(
+      this.size, this.pathType, this.imgPath, this.horizontal, this.vertical);
 
   @override
   State<StatefulWidget> createState() {
-    return GamePageState(size, imgPath, level);
+    return GamePageState(size, pathType, imgPath, horizontal, vertical);
   }
 }
 
@@ -32,8 +36,11 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
   AnimationController controller;
   Map<int, ImageNode> nodeMap = Map();
 
-  int level;
+  int horizontal;
+  int vertical;
+
   String path;
+  String pathType;
   ImageNode hitNode;
 
   double downX, downY, newX, newY;
@@ -44,11 +51,12 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
   GameState gameState = GameState.loading;
 
-  GamePageState(this.size, this.path, this.level) {
+  GamePageState(
+      this.size, this.pathType, this.path, this.horizontal, this.vertical) {
     puzzleMagic = PuzzleMagic();
-    emptyIndex = (level * (level - 1)) - 1;
+    emptyIndex = horizontal * vertical - 1;
 
-    puzzleMagic.init(path, size, level).then((val) {
+    puzzleMagic.init(pathType, path, size, horizontal, vertical).then((val) {
       setState(() {
         nodes = puzzleMagic.doTask();
         GameEngine.makeRandom(nodes);
@@ -80,12 +88,16 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
       ));
     } else {
       return Stack(
+        alignment: Alignment.center,
         children: [
           GestureDetector(
-            child: CustomPaint(
-                painter: GamePainter(nodes, level, hitNode, hitNodeList,
-                    direction, downX, downY, newX, newY, needDraw),
-                size: Size.infinite),
+            child: Container(
+              color: Colors.red,
+              child: CustomPaint(
+                  painter: GamePainter(nodes, hitNode, hitNodeList, direction,
+                      downX, downY, newX, newY, needDraw),
+                  size: Size.infinite),
+            ),
             onPanDown: onPanDown,
             onPanUpdate: onPanUpdate,
             onPanEnd: onPanUp,
@@ -118,7 +130,7 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
 
       Rect rect = node.rect;
       Rect dstRect = puzzleMagic.getOkRectF(
-          node.curIndex % level, (node.curIndex / level).floor());
+          node.curIndex % horizontal, (node.curIndex / horizontal).floor());
 
       final double deltX = dstRect.left - rect.left;
       final double deltY = dstRect.top - rect.top;
@@ -230,21 +242,21 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
   }
 
   Direction isBetween(ImageNode node, int emptyIndex) {
-    int x = emptyIndex % level;
-    int y = (emptyIndex / level).floor();
+    int x = emptyIndex % horizontal;
+    int y = (emptyIndex / horizontal).floor();
 
-    int x2 = node.curIndex % level;
-    int y2 = (node.curIndex / level).floor();
+    int x2 = node.curIndex % horizontal;
+    int y2 = (node.curIndex / horizontal).floor();
 
     if (x == x2) {
       if (y2 < y) {
         for (int index = y2; index < y; ++index) {
-          hitNodeList.add(nodeMap[index * level + x]);
+          hitNodeList.add(nodeMap[index * horizontal + x]);
         }
         return Direction.bottom;
       } else if (y2 > y) {
         for (int index = y2; index > y; --index) {
-          hitNodeList.add(nodeMap[index * level + x]);
+          hitNodeList.add(nodeMap[index * horizontal + x]);
         }
         return Direction.top;
       }
@@ -252,12 +264,12 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
     if (y == y2) {
       if (x2 < x) {
         for (int index = x2; index < x; ++index) {
-          hitNodeList.add(nodeMap[y * level + index]);
+          hitNodeList.add(nodeMap[y * horizontal + index]);
         }
         return Direction.right;
       } else if (x2 > x) {
         for (int index = x2; index > x; --index) {
-          hitNodeList.add(nodeMap[y * level + index]);
+          hitNodeList.add(nodeMap[y * horizontal + index]);
         }
         return Direction.left;
       }
@@ -266,19 +278,19 @@ class GamePageState extends State<GamePage> with TickerProviderStateMixin {
   }
 
   void swapEmpty() {
-    int v = -level;
+    int v = -horizontal;
     if (direction == Direction.right) {
       v = 1;
     } else if (direction == Direction.left) {
       v = -1;
     } else if (direction == Direction.bottom) {
-      v = level;
+      v = horizontal;
     }
     hitNodeList.forEach((node) {
       node.curIndex += v;
       nodeMap[node.curIndex] = node;
       node.rect = puzzleMagic.getOkRectF(
-          node.curIndex % level, (node.curIndex / level).floor());
+          node.curIndex % horizontal, (node.curIndex / horizontal).floor());
     });
     emptyIndex -= v * hitNodeList.length;
   }

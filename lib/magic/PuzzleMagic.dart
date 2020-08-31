@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'dart:ui' as ui show instantiateImageCodec, Codec, Image;
 import 'dart:ui';
 
@@ -15,29 +14,36 @@ class PuzzleMagic {
   double baseX;
   double baseY;
 
-  int level;
+  int horizontal;
+  int vertical;
+
   double eachBitmapWidth;
   double eachBitmapHeight;
 
-  Future<ui.Image> init(String path, Size size, int level) async {
-    await getImage(path);
+  Future<ui.Image> init(String pathType, String path, Size size, int horizontal,
+      int vertical) async {
+    pathType == 'network'
+        ? await getNetworkImage(path)
+        : await getLocalImage(path);
 
     screenSize = size;
-    this.level = level;
-    eachWidth = screenSize.width * 0.8 / level;
-    eachHeight = screenSize.height * 0.8 / (level - 1);
+    this.horizontal = horizontal;
+    this.vertical = vertical;
+
+    eachWidth = screenSize.width * 0.8 / horizontal;
+    eachHeight = screenSize.height * 0.3 / vertical;
 
     baseX = screenSize.width * 0.1;
 
     baseY = (screenSize.height - screenSize.width) * 0.5;
 
-    eachBitmapWidth = (image.width / level);
-    eachBitmapHeight = (image.height / (level - 1));
+    eachBitmapWidth = image.width / horizontal;
+    eachBitmapHeight = image.height / vertical;
 
     return image;
   }
 
-  Future<ui.Image> getImage(String path) async {
+  Future<ui.Image> getLocalImage(String path) async {
     ByteData data = await rootBundle.load(path);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List());
     FrameInfo frameInfo = await codec.getNextFrame();
@@ -45,14 +51,27 @@ class PuzzleMagic {
     return image;
   }
 
+  Future<ui.Image> getNetworkImage(String path) async {
+    Completer<ImageInfo> completer = Completer();
+    var img = new NetworkImage(path);
+    img
+        .resolve(ImageConfiguration())
+        .addListener(ImageStreamListener((ImageInfo info, bool _) {
+      completer.complete(info);
+    }));
+    ImageInfo imageInfo = await completer.future;
+    image = imageInfo.image;
+    return image;
+  }
+
   List<ImageNode> doTask() {
     List<ImageNode> list = [];
-    for (int j = 0; j < (level - 1); j++) {
-      for (int i = 0; i < level; i++) {
-        if (j * level + i + 1 < level * (level - 1)) {
+    for (int j = 0; j < vertical; j++) {
+      for (int i = 0; i < horizontal; i++) {
+        if ((j * vertical) + i + vertical < horizontal * vertical) {
           ImageNode node = ImageNode();
           node.rect = getOkRectF(i, j);
-          node.index = j * level + i;
+          node.index = j * horizontal + i;
           makeBitmap(node);
           list.add(node);
         }
@@ -67,8 +86,8 @@ class PuzzleMagic {
   }
 
   void makeBitmap(ImageNode node) {
-    int i = node.getXIndex(level);
-    int j = node.getYIndex(level);
+    int i = node.getXIndex(horizontal);
+    int j = node.getYIndex(horizontal);
 
     Rect rect = getShapeRect(i, j, eachBitmapWidth, eachBitmapHeight);
 
